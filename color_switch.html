@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>color_switch</title>
+<style>
+  #colorBox {
+    width: 2000px;
+    height: 2000px;
+    border: 1px solid black;
+  }
+</style>
+</head>
+<body>
+
+<div id="colorBox" style="background-color: rgb(0,0,0);"></div>
+
+<script>
+  const colorBox = document.getElementById('colorBox');
+  let currentColor = 0; // 0 代表黑色，1 代表白色
+  let intervalTime = 500; // 預設時間間隔
+
+  // 檢查 URL 參數是否有設定 interval
+  const urlParams = new URLSearchParams(window.location.search);
+  const intervalParam = urlParams.get('interval');
+  if (intervalParam && !isNaN(intervalParam) && parseInt(intervalParam) > 0) {
+    intervalTime = parseInt(intervalParam);
+  }
+
+  function changeColor() {
+    if (currentColor === 0) {
+      colorBox.style.backgroundColor = 'rgb(255,255,255)';
+      currentColor = 1;
+    } else {
+      colorBox.style.backgroundColor = 'rgb(0,0,0)';
+      currentColor = 0;
+    }
+  }
+
+  setInterval(changeColor, intervalTime);
+</script>
+
+</body>
+</html>
