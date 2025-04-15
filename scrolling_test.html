@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Motion Blur Test with Customizable Box</title>
+<style>
+  body { background-color: white; margin: 0; overflow: hidden; }
+  #rectangle {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: black;
+  }
+  #controls {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+</style>
+</head>
+<body>
+
+<div id="rectangle"></div>
+
+<div id="controls">
+  <label for="speedInput">Speed (dp/sec):</label>
+  <input type="number" id="speedInput" value="250" min="1">
+  <br>
+  <label for="widthInput">Width (px):</label>
+  <input type="number" id="widthInput" value="100" min="1">
+  <br>
+  <label for="heightInput">Height (px):</label>
+  <input type="number" id="heightInput" value="50" min="1">
+  <br>
+  <button onclick="updateBoxSettings()">Apply Box Settings</button>
+  <br><br>
+  <button onclick="toggleColors()">Toggle Colors</button>
+</div>
+
+<script>
+  const body = document.body;
+  const rectangle = document.getElementById('rectangle');
+  const speedInput = document.getElementById('speedInput');
+  const widthInput = document.getElementById('widthInput');
+  const heightInput = document.getElementById('heightInput');
+  let positionY = 0;
+  let speed = parseInt(speedInput.value);
+  let boxWidth = parseInt(widthInput.value);
+  let boxHeight = parseInt(heightInput.value);
+  let lastTime = 0;
+  let isBlackOnWhite = true;
+
+  // 設定初始方塊大小
+  rectangle.style.width = `${boxWidth}px`;
+  rectangle.style.height = `${boxHeight}px`;
+
+  function updateRectangle(deltaTime) {
+    positionY += speed * deltaTime / 1000;
+    rectangle.style.top = `${positionY}px`;
+
+    if (positionY > window.innerHeight) {
+      positionY = -boxHeight; // 使用方塊高度重置
+    }
+  }
+
+  function animate(currentTime) {
+    const deltaTime = currentTime - lastTime;
+    updateRectangle(deltaTime);
+    lastTime = currentTime;
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+
+  speedInput.addEventListener('change', () => {
+    speed = parseInt(speedInput.value) || 1;
+  });
+
+  function updateBoxSettings() {
+    const newWidth = parseInt(widthInput.value);
+    const newHeight = parseInt(heightInput.value);
+
+    if (!isNaN(newWidth) && newWidth > 0) {
+      boxWidth = newWidth;
+      rectangle.style.width = `${boxWidth}px`;
+    } else {
+      alert('Please enter a valid positive number for width.');
+      widthInput.value = boxWidth;
+    }
+
+    if (!isNaN(newHeight) && newHeight > 0) {
+      boxHeight = newHeight;
+      rectangle.style.height = `${boxHeight}px`;
+      // 同時更新重置位置的參考
+      if (positionY > window.innerHeight) {
+        positionY = -boxHeight;
+      }
+    } else {
+      alert('Please enter a valid positive number for height.');
+      heightInput.value = boxHeight;
+    }
+  }
+
+  window.addEventListener('resize', () => {
+    if (positionY > window.innerHeight) {
+      positionY = -boxHeight;
+    }
+  });
+
+  function toggleColors() {
+    if (isBlackOnWhite) {
+      body.style.backgroundColor = 'black';
+      rectangle.style.backgroundColor = 'white';
+      isBlackOnWhite = false;
+    } else {
+      body.style.backgroundColor = 'white';
+      rectangle.style.backgroundColor = 'black';
+      isBlackOnWhite = true;
+    }
+  }
+</script>
+
+</body>
+</html>
