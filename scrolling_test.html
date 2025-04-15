@@ -27,16 +27,14 @@
 <div id="rectangle"></div>
 
 <div id="controls">
-  <label for="speedInput">Speed (dp/sec):</label>
-  <input type="number" id="speedInput" value="250" min="1">
+  <label for="speedInput">Speed (pixels/sec):</label>
+  <input type="number" id="speedInput" value="500" min="1">
   <br>
   <label for="widthInput">Width (px):</label>
-  <input type="number" id="widthInput" value="100" min="1">
+  <input type="number" id="widthInput" value="300" min="1">
   <br>
   <label for="heightInput">Height (px):</label>
-  <input type="number" id="heightInput" value="50" min="1">
-  <br>
-  <button onclick="updateBoxSettings()">Apply Box Settings</button>
+  <input type="number" id="heightInput" value="100" min="1">
   <br><br>
   <button onclick="toggleColors()">Toggle Colors</button>
 </div>
@@ -48,7 +46,7 @@
   const widthInput = document.getElementById('widthInput');
   const heightInput = document.getElementById('heightInput');
   let positionY = 0;
-  let speed = parseInt(speedInput.value);
+  let speed = parseInt(speedInput.value); // pixels per second
   let boxWidth = parseInt(widthInput.value);
   let boxHeight = parseInt(heightInput.value);
   let lastTime = 0;
@@ -59,7 +57,7 @@
   rectangle.style.height = `${boxHeight}px`;
 
   function updateRectangle(deltaTime) {
-    positionY += speed * deltaTime / 1000;
+    positionY += speed * deltaTime / 1000; // 將速度轉換為 pixels per millisecond
     rectangle.style.top = `${positionY}px`;
 
     if (positionY > window.innerHeight) {
@@ -77,10 +75,10 @@
   requestAnimationFrame(animate);
 
   speedInput.addEventListener('change', () => {
-    speed = parseInt(speedInput.value) || 1;
+    speed = parseInt(speedInput.value) || 1; // 確保速度是有效的數字
   });
 
-  function updateBoxSettings() {
+  function updateBoxSize() {
     const newWidth = parseInt(widthInput.value);
     const newHeight = parseInt(heightInput.value);
 
@@ -105,6 +103,9 @@
     }
   }
 
+  widthInput.addEventListener('blur', updateBoxSize);
+  heightInput.addEventListener('blur', updateBoxSize);
+
   window.addEventListener('resize', () => {
     if (positionY > window.innerHeight) {
       positionY = -boxHeight;
@@ -123,6 +124,3 @@
     }
   }
 </script>
-
-</body>
-</html>
