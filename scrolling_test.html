@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Motion Blur Test with Customizable Box</title>
+<title>Motion Blur Test with Customizable Box and RGB Colors</title>
 <style>
   body { background-color: white; margin: 0; overflow: hidden; }
   #rectangle {
@@ -19,6 +19,34 @@
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    font-family: sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  #controls label {
+    display: inline-block;
+    width: 120px;
+    margin-bottom: 5px;
+  }
+  #controls input[type="number"],
+  #controls input[type="text"] {
+    width: 100px;
+    padding: 3px;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+  }
+  #controls button {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+  }
+  #controls button:hover {
+    background-color: #0056b3;
   }
 </style>
 </head>
@@ -37,6 +65,12 @@
   <input type="number" id="heightInput" value="100" min="1">
   <br><br>
   <button onclick="toggleColors()">Toggle Colors</button>
+  <br><br>
+  <label for="backgroundColorInput">Background Color (RGB):</label>
+  <input type="text" id="backgroundColorInput" value="255,255,255" placeholder="e.g., 255,255,255">
+  <br>
+  <label for="boxColorInput">Box Color (RGB):</label>
+  <input type="text" id="boxColorInput" value="0,0,0" placeholder="e.g., 0,0,0">
 </div>
 
 <script>
@@ -45,26 +79,48 @@
   const speedInput = document.getElementById('speedInput');
   const widthInput = document.getElementById('widthInput');
   const heightInput = document.getElementById('heightInput');
+  const backgroundColorInput = document.getElementById('backgroundColorInput');
+  const boxColorInput = document.getElementById('boxColorInput');
   let positionY = 0;
   let speed = parseInt(speedInput.value); // pixels per second
   let boxWidth = parseInt(widthInput.value);
   let boxHeight = parseInt(heightInput.value);
   let lastTime = 0;
-  let isBlackOnWhite = true;
 
-  // 設定初始方塊大小
+  // Function to convert an RGB string (e.g., "255,0,0") to CSS rgb() format
+  function getRgbCssString(rgbString) {
+    const parts = rgbString.split(',').map(s => parseInt(s.trim()));
+    if (parts.length === 3 && parts.every(p => !isNaN(p) && p >= 0 && p <= 255)) {
+      return `rgb(${parts[0]},${parts[1]},${parts[2]})`;
+    }
+    console.warn(`Invalid RGB input: "${rgbString}". Using default color.`);
+    return 'rgb(0,0,0)'; // Fallback to black if input is invalid
+  }
+
+  // Set initial box size and colors based on RGB inputs
   rectangle.style.width = `${boxWidth}px`;
   rectangle.style.height = `${boxHeight}px`;
+  body.style.backgroundColor = getRgbCssString(backgroundColorInput.value);
+  rectangle.style.backgroundColor = getRgbCssString(boxColorInput.value);
 
+  /**
+   * Updates the rectangle's position based on delta time.
+   * @param {number} deltaTime - Time elapsed in milliseconds since the last update.
+   */
   function updateRectangle(deltaTime) {
-    positionY += speed * deltaTime / 1000; // 將速度轉換為 pixels per millisecond
+    positionY += speed * deltaTime / 1000; // Convert speed to pixels per millisecond
     rectangle.style.top = `${positionY}px`;
 
+    // Reset rectangle to top if it goes off the bottom of the screen
     if (positionY > window.innerHeight) {
-      positionY = -boxHeight; // 使用方塊高度重置
+      positionY = -boxHeight;
     }
   }
 
+  /**
+   * Animation loop function.
+   * @param {number} currentTime - High-resolution timestamp provided by requestAnimationFrame.
+   */
   function animate(currentTime) {
     const deltaTime = currentTime - lastTime;
     updateRectangle(deltaTime);
@@ -72,12 +128,19 @@
     requestAnimationFrame(animate);
   }
 
+  // Start the animation
   requestAnimationFrame(animate);
 
+  // --- Event Listeners ---
+
+  // Update speed when the speed input changes
   speedInput.addEventListener('change', () => {
-    speed = parseInt(speedInput.value) || 1; // 確保速度是有效的數字
+    speed = parseInt(speedInput.value) || 1; // Ensure speed is a valid number, minimum 1
   });
 
+  /**
+   * Updates box size and handles input validation.
+   */
   function updateBoxSize() {
     const newWidth = parseInt(widthInput.value);
     const newHeight = parseInt(heightInput.value);
@@ -86,41 +149,71 @@
       boxWidth = newWidth;
       rectangle.style.width = `${boxWidth}px`;
     } else {
-      alert('Please enter a valid positive number for width.');
-      widthInput.value = boxWidth;
+      alert('Please enter a valid positive number for width!');
+      widthInput.value = boxWidth; // Revert to last valid value
     }
 
     if (!isNaN(newHeight) && newHeight > 0) {
       boxHeight = newHeight;
       rectangle.style.height = `${boxHeight}px`;
-      // 同時更新重置位置的參考
+      // If the box is off screen and new height affects reset position, update it
       if (positionY > window.innerHeight) {
         positionY = -boxHeight;
       }
     } else {
-      alert('Please enter a valid positive number for height.');
-      heightInput.value = boxHeight;
+      alert('Please enter a valid positive number for height!');
+      heightInput.value = boxHeight; // Revert to last valid value
     }
   }
 
+  // Update box size when width or height input loses focus
   widthInput.addEventListener('blur', updateBoxSize);
   heightInput.addEventListener('blur', updateBoxSize);
 
+  // Reset box position if window resizes and box is off screen
   window.addEventListener('resize', () => {
     if (positionY > window.innerHeight) {
       positionY = -boxHeight;
     }
   });
 
+  /**
+   * Toggles background and box colors, and updates input fields.
+   */
   function toggleColors() {
-    if (isBlackOnWhite) {
-      body.style.backgroundColor = 'black';
-      rectangle.style.backgroundColor = 'white';
-      isBlackOnWhite = false;
-    } else {
-      body.style.backgroundColor = 'white';
-      rectangle.style.backgroundColor = 'black';
-      isBlackOnWhite = true;
-    }
+    const currentBackgroundColor = body.style.backgroundColor;
+    const currentBoxColor = rectangle.style.backgroundColor;
+
+    body.style.backgroundColor = currentBoxColor;
+    rectangle.style.backgroundColor = currentBackgroundColor;
+
+    // Update the RGB input fields to reflect the new colors
+    backgroundColorInput.value = cssRgbToRgbString(body.style.backgroundColor);
+    boxColorInput.value = cssRgbToRgbString(rectangle.style.backgroundColor);
   }
+
+  /**
+   * Converts a CSS rgb() string (e.g., "rgb(255, 0, 0)") to a "R,G,B" string.
+   * @param {string} cssRgb - CSS rgb() string.
+   * @returns {string} - "R,G,B" string.
+   */
+  function cssRgbToRgbString(cssRgb) {
+    const match = cssRgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    if (match) {
+      return `${match[1]},${match[2]},${match[3]}`;
+    }
+    return '0,0,0'; // Fallback
+  }
+
+  // Live update background color when input changes (on 'input' event)
+  backgroundColorInput.addEventListener('input', (event) => {
+    body.style.backgroundColor = getRgbCssString(event.target.value);
+  });
+
+  // Live update box color when input changes (on 'input' event)
+  boxColorInput.addEventListener('input', (event) => {
+    rectangle.style.backgroundColor = getRgbCssString(event.target.value);
+  });
 </script>
+</body>
+</html>
